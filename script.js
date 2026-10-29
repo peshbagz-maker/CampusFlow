@@ -5,6 +5,10 @@ const taskList = document.getElementById("task-list");
 const taskCount = document.getElementById("task-count");
 
 function updateTaskCount() {
+    if (!taskList || !taskCount) {
+        return;
+    }
+
     const tasks = taskList.querySelectorAll("li");
     let remaining = 0;
 
@@ -18,52 +22,65 @@ function updateTaskCount() {
         `${remaining} task${remaining === 1 ? "" : "s"} remaining`;
 }
 
-form.addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    const taskText = input.value.trim();
-
-    if (taskText === "") {
+function initCampusFlow() {
+    if (!form || !input || !taskList || !taskCount) {
+        console.error("CampusFlow: required elements were not found on the page.");
         return;
     }
 
-    const task = document.createElement("li");
-    const taskName = document.createElement("span");
-    const completeButton = document.createElement("button");
-    const deleteButton = document.createElement("button");
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-    taskName.textContent = taskText;
+        const taskText = input.value.trim();
 
-    completeButton.textContent = "Done";
-    completeButton.type = "button";
+        if (taskText === "") {
+            return;
+        }
 
-    deleteButton.textContent = "Delete";
-    deleteButton.type = "button";
+        const task = document.createElement("li");
+        const taskName = document.createElement("span");
+        const completeButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
 
-    completeButton.addEventListener("click", function () {
-        task.classList.toggle("completed");
+        taskName.textContent = taskText;
+
+        completeButton.textContent = "Done";
+        completeButton.type = "button";
+
+        deleteButton.textContent = "Delete";
+        deleteButton.type = "button";
+
+        completeButton.addEventListener("click", function () {
+            task.classList.toggle("completed");
+            updateTaskCount();
+        });
+
+        deleteButton.addEventListener("click", function () {
+            task.remove();
+            updateTaskCount();
+        });
+
+        task.append(
+            taskName,
+            document.createTextNode(" "),
+            completeButton,
+            document.createTextNode(" "),
+            deleteButton
+        );
+
+        taskList.appendChild(task);
+
+        input.value = "";
+        input.focus();
+
         updateTaskCount();
     });
-
-    deleteButton.addEventListener("click", function () {
-        task.remove();
-        updateTaskCount();
-    });
-
-    task.append(
-        taskName,
-        document.createTextNode(" "),
-        completeButton,
-        document.createTextNode(" "),
-        deleteButton
-    );
-
-    taskList.appendChild(task);
-
-    input.value = "";
-    input.focus();
 
     updateTaskCount();
-});
+}
 
-updateTaskCount();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCampusFlow);
+} else {
+    initCampusFlow();
+}
